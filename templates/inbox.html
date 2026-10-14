@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}Gelen kutusu{% endblock %}
+{% block content %}
+<main class="page-shell inbox-page">
+  <div class="inbox-heading">
+    <div>
+      <p class="eyebrow"><span class="eyebrow-dot"></span> YÖNETİM</p>
+      <h1>Gelen kutusu</h1>
+      <p class="inbox-subtitle">Paylaşılan mesajlar ve güncel durumları.</p>
+    </div>
+    {% if selected_category %}
+      <a class="back-link" href="{{ url_for('inbox') }}"><span aria-hidden="true">←</span> Zarflara dön</a>
+    {% endif %}
+  </div>
+
+  <div class="inbox-stats" aria-label="Mesaj sayıları">
+    {% for category in categories %}
+      <div class="inbox-stat {% if selected_category == category %}selected{% endif %}">
+        <span>{{ category }}</span>
+        <strong>{{ counts[category] }}</strong>
+      </div>
+    {% endfor %}
+    <div class="inbox-stat total-stat {% if not selected_category %}selected{% endif %}">
+      <span>Tüm mesajlar</span>
+      <strong>{{ counts.values()|sum }}</strong>
+    </div>
+  </div>
+
+  <nav class="filters" aria-label="Mesaj türüne göre filtrele">
+    <a class="filter-link {% if not selected_category %}active{% endif %}" href="{{ url_for('inbox') }}">Tümü</a>
+    {% for category in categories %}
+      <a class="filter-link {% if selected_category == category %}active{% endif %}" href="{{ url_for('inbox', category=category) }}">{{ category }}</a>
+    {% endfor %}
+  </nav>
+
+  <section class="table-wrap" aria-label="Mesaj kayıtları">
+    {% if messages %}
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">Mesaj</th>
+            <th scope="col">Tür</th>
+            <th scope="col">Gönderen</th>
+            <th scope="col">Tarih</th>
+            <th scope="col">Durum</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for message in messages %}
+            <tr>
+              <td class="message-cell">
+                <strong>{{ message.title }}</strong>
+                <p>{{ message.details }}</p>
+              </td>
+              <td><span class="category-tag">{{ message.category }}</span></td>
+              <td class="sender-cell">
+                <span>{{ message.sender or "İsimsiz" }}</span>
+                {% if message.email %}<a href="mailto:{{ message.email }}">{{ message.email }}</a>{% endif %}
+              </td>
+              <td class="date-cell">{{ message.created_at }}</td>
+              <td>
+                <form class="status-form" action="{{ url_for('update_status', message_id=message.id, category=selected_category) }}" method="post">
+                  <select name="status" aria-label="{{ message.title }} durumunu seç">
+                    {% for status in statuses %}
+                      <option value="{{ status }}" {% if message.status == status %}selected{% endif %}>{{ status }}</option>
+                    {% endfor %}
+                  </select>
+                  <button type="submit" aria-label="Durumu kaydet" title="Durumu kaydet">↵</button>
+                </form>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <div class="empty-state">
+        <span class="empty-mark" aria-hidden="true">—</span>
+        <h2>Henüz mesaj yok</h2>
+        <p>{% if selected_category %}Bu türde kayıt bulunmuyor.{% else %}Yeni mesajlar burada listelenecek.{% endif %}</p>
+      </div>
+    {% endif %}
+  </section>
+</main>
+{% endblock %}

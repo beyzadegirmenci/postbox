@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Mesaj bırak{% endblock %}
+{% block content %}
+<main class="dashboard-shell">
+  <aside class="dashboard-sidebar" aria-label="Mesaj türleri">
+    <div class="dashboard-side-heading">
+      <p class="dashboard-eyebrow">KAYITLAR</p>
+      <h2>Türler</h2>
+    </div>
+    <nav class="dashboard-categories">
+      <a class="dashboard-category active" href="{{ url_for('index') }}">
+        <span class="dashboard-category-icon" aria-hidden="true">▤</span>
+        <span>Tümü</span>
+        <strong>{{ counts.values()|sum }}</strong>
+      </a>
+      {% for category in categories %}
+        <a class="dashboard-category" href="{{ url_for('inbox', category=category) }}">
+          <span class="dashboard-category-icon" aria-hidden="true">{% if category == 'Öneri' %}✳{% elif category == 'Şikayet' %}!{% else %}↗{% endif %}</span>
+          <span>{{ category }}</span>
+          <strong>{{ counts[category] }}</strong>
+        </a>
+      {% endfor %}
+    </nav>
+  </aside>
+
+  <section class="dashboard-main" aria-labelledby="dashboard-title">
+    <header class="dashboard-heading">
+      <h1 id="dashboard-title">Tümü</h1>
+      <span class="dashboard-total">{{ counts.values()|sum }} kayıt</span>
+    </header>
+    <section class="dashboard-records" aria-label="Son mesajlar">
+      {% if recent_messages %}
+        {% for message in recent_messages %}
+          <a class="dashboard-record" href="{{ url_for('inbox', category=message.category) }}">
+            <span class="record-type">{{ message.category }}</span>
+            <span class="record-copy">
+              <strong>{{ message.title }}</strong>
+              <small>{{ message.sender or 'İsimsiz' }} · {{ message.created_at }}</small>
+              <span>{{ message.details|truncate(130) }}</span>
+            </span>
+            <span class="record-arrow" aria-hidden="true">›</span>
+          </a>
+        {% endfor %}
+      {% else %}
+        <div class="dashboard-empty">
+          <h2>Henüz kayıt yok</h2>
+        </div>
+      {% endif %}
+    </section>
+  </section>
+</main>
+{% endblock %}

@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <defs>
+    <linearGradient id="mailbox-stroke" x1="0" y1="256" x2="512" y2="256" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#4479D2"/>
+      <stop offset="1" stop-color="#BD2CAB"/>
+    </linearGradient>
+  </defs>
+  <g stroke="url(#mailbox-stroke)" stroke-width="16" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M246 366V188c0-54 44-98 98-98h98c40 0 72 32 72 72v204H145"/>
+    <path d="M246 186c-22-48-69-80-125-80-70 0-127 57-127 127v135"/>
+    <path d="M247 296h267"/>
+    <path d="M407 238h69v39h-69z"/>
+    <path d="M294 144V11h98l-25 29 25 29h-98"/>
+    <path d="M273 145h47"/>
+    <path d="M143 367h238v31H143z"/>
+    <path d="M218 398v100h75V398"/>
+    <path d="M8 235h207v132H8z"/>
+    <path d="m9 238 102 76 103-76"/>
+    <path d="m9 363 76-63m129 63-77-63"/>
+  </g>
+</svg>

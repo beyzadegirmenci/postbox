@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#173b35">
+  <title>{% block title %}Sesini Duyur{% endblock %} | Posta Kutusu</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="{{ url_for('index') }}" aria-label="Ana sayfa">
+      <span class="brand-mark" aria-hidden="true">P</span>
+      <span>Posta Kutusu</span>
+    </a>
+    <span class="topbar-context">GERİ BİLDİRİM PANELİ</span>
+  </header>
+
+  {% with notices = get_flashed_messages(with_categories=true) %}
+    {% if notices %}
+      <div class="notices" role="status" aria-live="polite">
+        {% for kind, text in notices %}
+          <p class="notice notice-{{ kind }}">{{ text }}</p>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  {% block content %}{% endblock %}
+
+  <button class="feedback-launcher" type="button" data-feedback-open aria-label="Öneri, şikayet veya geri bildirim bırak">
+    <img class="feedback-glyph" src="{{ url_for('static', filename='feedback-icon.svg') }}" alt="" aria-hidden="true">
+    <span class="feedback-tooltip" role="tooltip">Öneri, şikayet veya geri bildirimde bulun</span>
+  </button>
+  <button class="mailbox-launcher" type="button" data-mailbox-open aria-label="Posta kutusunu aç">
+    <img class="mailbox-glyph" src="{{ url_for('static', filename='mailbox-icon.svg') }}" alt="" aria-hidden="true">
+    <span class="mailbox-count">{{ counts.values()|sum }}</span>
+    <span class="mailbox-hint">Posta kutusu</span>
+  </button>
+
+  <dialog class="mailbox-dialog" id="mailbox-dialog" aria-labelledby="mailbox-dialog-title">
+    <div class="dialog-topline">
+      <span class="dialog-kicker">YETKİLİ POSTA KUTUSU</span>
+      <button class="icon-close" type="button" data-mailbox-close aria-label="Pencereyi kapat">×</button>
+    </div>
+    <div class="mailbox-dialog-heading">
+      <div><h2 id="mailbox-dialog-title">Gelen zarflar</h2><p>{{ counts.values()|sum }} mesaj bekliyor</p></div>
+      <span class="mailbox-dialog-mark" aria-hidden="true">✉</span>
+    </div>
+    <div class="envelope-stack">
+      {% for category, icon, color_class in [('Öneri', '✳', 'envelope-suggestion'), ('Şikayet', '!', 'envelope-complaint'), ('Geri Bildirim', '↗', 'envelope-feedback')] %}
+        <a class="category-envelope {{ color_class }}" href="{{ url_for('inbox', category=category) }}" style="--envelope-order: {{ loop.index0 }}">
+          <span class="envelope-symbol" aria-hidden="true">{{ icon }}</span>
+          <span class="envelope-copy"><strong>{{ category }}{% if category == 'Öneri' %}ler{% else %}ler{% endif %}</strong><small>{{ counts[category] }} mesaj</small></span>
+          <span class="envelope-total">{{ counts[category] }}</span>
+          <span class="envelope-open" aria-hidden="true">→</span>
+        </a>
+      {% endfor %}
+    </div>
+  </dialog>
+
+  <dialog class="feedback-dialog" id="feedback-dialog" aria-labelledby="feedback-dialog-title">
+    <div class="dialog-topline">
+      <span class="dialog-kicker">SESLİ BİR NOT</span>
+      <button class="icon-close" type="button" data-feedback-close aria-label="Pencereyi kapat">×</button>
+    </div>
+    <section class="feedback-step" data-feedback-step="choose">
+      <h2 id="feedback-dialog-title">Ne paylaşmak istersiniz?</h2>
+      <p class="dialog-copy">Mesajınız doğru ekibe ulaşsın diye bir tür seçin.</p>
+      <div class="choice-list">
+        <button class="choice-envelope choice-suggestion" type="button" data-category="Öneri">
+          <span class="choice-icon" aria-hidden="true">✳</span><span><strong>Öneri</strong><small>Yeni bir fikir paylaşın</small></span><span class="choice-arrow" aria-hidden="true">↗</span>
+        </button>
+        <button class="choice-envelope choice-complaint" type="button" data-category="Şikayet">
+          <span class="choice-icon" aria-hidden="true">!</span><span><strong>Şikayet</strong><small>Yaşadığınız sorunu anlatın</small></span><span class="choice-arrow" aria-hidden="true">↗</span>
+        </button>
+        <button class="choice-envelope choice-feedback" type="button" data-category="Geri Bildirim">
+          <span class="choice-icon" aria-hidden="true">↗</span><span><strong>Geri bildirim</strong><small>Deneyiminizi bizimle paylaşın</small></span><span class="choice-arrow" aria-hidden="true">↗</span>
+        </button>
+      </div>
+    </section>
+    <section class="feedback-step" data-feedback-step="form" hidden>
+      <button class="dialog-back" type="button" data-feedback-back>← Tür seçimine dön</button>
+      <h2 class="selected-category-title"></h2>
+      <p class="dialog-copy">Notunuz yalnızca ilgili ekiple paylaşılır.</p>
+      <form action="{{ url_for('submit_feedback') }}" method="post" class="feedback-form">
+        <input type="hidden" name="category" value="">
+        <label for="dialog-title">Konu <span class="required">*</span></label>
+        <input id="dialog-title" name="title" type="text" maxlength="160" placeholder="Mesajınızı kısaca özetleyin" required>
+        <label for="dialog-details">Açıklama <span class="required">*</span></label>
+        <textarea id="dialog-details" name="details" rows="4" maxlength="5000" placeholder="Detayları paylaşın..." required></textarea>
+        <div class="contact-fields">
+          <div><label for="dialog-sender">Adınız <span class="optional">İsteğe bağlı</span></label><input id="dialog-sender" name="sender" type="text" maxlength="120" autocomplete="name" placeholder="Ad soyad"></div>
+          <div><label for="dialog-email">E-posta <span class="optional">İsteğe bağlı</span></label><input id="dialog-email" name="email" type="email" maxlength="254" autocomplete="email" placeholder="ornek@adres.com"></div>
+        </div>
+        <button class="submit-button" type="submit">Mesajı gönder <span aria-hidden="true">→</span></button>
+        <p class="form-note">Ad ve e-posta paylaşmak zorunlu değildir.</p>
+      </form>
+    </section>
+  </dialog>
+
+  <script src="{{ url_for('static', filename='interactions.js') }}" defer></script>
+</body>
+</html>
