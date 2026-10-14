@@ -1,4 +1,4 @@
 ﻿.venv/
 __pycache__/
-instance/*.sqlite3
+instance/
 *.py[cod]
